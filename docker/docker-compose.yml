@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ──
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: msgpilot
+      POSTGRES_PASSWORD: msgpilot_secret
+      POSTGRES_DB: msgpilot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # ── Redis ──
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # ── FastAPI Backend ──
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../backend/.env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ../backend:/app
+      - wa_sessions:/app/wa_sessions
+      - uploads:/app/uploads
+
+  # ── Celery Worker ──
+  celery:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    command: celery -A app.services.celery_app worker -l info -c 1
+    env_file:
+      - ../backend/.env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ../backend:/app
+      - wa_sessions:/app/wa_sessions
+      - uploads:/app/uploads
+
+  # ── Celery Beat (scheduler) ──
+  celery-beat:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+    command: celery -A app.services.celery_app beat -l info
+    env_file:
+      - ../backend/.env
+    depends_on:
+      - redis
+    volumes:
+      - ../backend:/app
+
+  # ── Next.js Frontend ──
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  wa_sessions:
+  uploads:

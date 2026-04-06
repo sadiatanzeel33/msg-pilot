@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where.exe docker:*)",
+      "Bash(winget install:*)"
+    ]
+  }
+}
