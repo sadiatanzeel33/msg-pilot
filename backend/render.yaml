@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: msg-pilot-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: REDIS_URL
+        sync: false
+      - key: CELERY_BROKER_URL
+        sync: false
+      - key: CELERY_RESULT_BACKEND
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: WA_SESSION_DIR
+        value: ./wa_sessions
+      - key: WA_HEADLESS
+        value: "true"
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: DEFAULT_MIN_DELAY
+        value: "8"
+      - key: DEFAULT_MAX_DELAY
+        value: "25"
+      - key: DAILY_SEND_LIMIT
+        value: "500"

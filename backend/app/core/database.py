@@ -4,7 +4,11 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
-engine = create_async_engine(settings.async_database_url, echo=False, pool_size=20, max_overflow=10)
+_connect_args = {"ssl": "require"} if "neon.tech" in settings.async_database_url else {}
+engine = create_async_engine(
+    settings.async_database_url, echo=False, pool_size=20, max_overflow=10,
+    connect_args=_connect_args,
+)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
