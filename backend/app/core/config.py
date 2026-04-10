@@ -10,6 +10,22 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://msgpilot:msgpilot_secret@localhost:5432/msgpilot"
     DATABASE_URL_SYNC: str = "postgresql://msgpilot:msgpilot_secret@localhost:5432/msgpilot"
 
+    @property
+    def async_database_url(self) -> str:
+        """Ensure DATABASE_URL uses asyncpg driver (Railway gives postgresql://)."""
+        url = self.DATABASE_URL
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
+
+    @property
+    def sync_database_url(self) -> str:
+        """Ensure sync URL uses plain postgresql:// driver."""
+        url = self.DATABASE_URL_SYNC or self.DATABASE_URL
+        if "+asyncpg" in url:
+            url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
+        return url
+
     # ── Auth ──
     SECRET_KEY: str = "change-me"
     ALGORITHM: str = "HS256"

@@ -12,8 +12,15 @@ import asyncio
 import os
 import logging
 from typing import Optional
-from playwright.async_api import async_playwright, Page, Browser, BrowserContext
 from app.core.config import settings
+
+try:
+    from playwright.async_api import async_playwright, Page, Browser, BrowserContext
+except ImportError:
+    async_playwright = None
+    Page = None
+    Browser = None
+    BrowserContext = None
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Shell from "@/components/layout/Shell";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +11,14 @@ import { Send, Users, AlertCircle, Clock, TrendingUp, Activity } from "lucide-re
 import { useSearchParams } from "next/navigation";
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<Shell><div className="animate-pulse p-8 text-center text-gray-400">Loading...</div></Shell>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const [stats, setStats] = useState<any>(null);
   const [activityLogs, setLogs] = useState<any[]>([]);
   const [tab, setTab] = useState<"overview" | "logs">("overview");

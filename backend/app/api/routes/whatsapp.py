@@ -24,11 +24,15 @@ async def get_qr(user: User = Depends(get_current_user)):
     Launch headless browser and return QR code as base64 PNG.
     The frontend displays this QR for the user to scan.
     """
-    engine = WhatsAppEngine(str(user.id))
-    qr_bytes = await engine.get_qr_code()
-    if qr_bytes:
-        return {"qr": base64.b64encode(qr_bytes).decode(), "status": "waiting_scan"}
-    return {"qr": None, "status": "already_authenticated"}
+    try:
+        engine = WhatsAppEngine(str(user.id))
+        qr_bytes = await engine.get_qr_code()
+        if qr_bytes:
+            return {"qr": base64.b64encode(qr_bytes).decode(), "status": "waiting_scan"}
+        return {"qr": None, "status": "already_authenticated"}
+    except Exception:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail="WhatsApp QR generation requires Playwright (not available on serverless). Deploy with full infrastructure to enable this feature.")
 
 
 @router.post("/session/logout")

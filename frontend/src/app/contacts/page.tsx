@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Shell from "@/components/layout/Shell";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
@@ -12,6 +12,14 @@ import { formatDate } from "@/lib/utils";
 import { Upload, Plus, Trash2, Download, Search, CheckCircle, XCircle } from "lucide-react";
 
 export default function ContactsPage() {
+  return (
+    <Suspense fallback={<Shell><div className="animate-pulse p-8 text-center text-gray-400">Loading...</div></Shell>}>
+      <ContactsContent />
+    </Suspense>
+  );
+}
+
+function ContactsContent() {
   const params = useSearchParams();
   const [tab, setTab] = useState<"list" | "upload" | "add">(params.get("tab") === "upload" ? "upload" : "list");
   const [contactList, setContacts] = useState<any[]>([]);

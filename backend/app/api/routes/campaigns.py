@@ -141,9 +141,12 @@ async def start_campaign(campaign_id: UUID, user: User = Depends(get_current_use
     c.started_at = c.started_at or datetime.now(timezone.utc)
     db.add(ActivityLog(user_id=user.id, action="campaign_started", detail=str(campaign_id)))
 
-    # Trigger Celery task
-    from app.services.celery_app import run_campaign_task
-    run_campaign_task.delay(str(campaign_id))
+    # Trigger Celery task (gracefully skip if Celery/Redis unavailable)
+    try:
+        from app.services.celery_app import run_campaign_task
+        run_campaign_task.delay(str(campaign_id))
+    except Exception:
+        return {"status": "running", "warning": "Campaign saved but message sending requires a background worker (Celery + Redis). Deploy with full infrastructure to enable sending."}
 
     return {"status": "running"}
 
