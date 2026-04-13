@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-FTE Watchers Dashboard</title>
+    <meta http-equiv="refresh" content="30">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #334155;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: #38bdf8;
+            margin-bottom: 0.5rem;
+        }
+        .header .subtitle {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1.2rem;
+            border: 1px solid #334155;
+        }
+        .stat-card .label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0.3rem;
+        }
+        .watcher-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .watcher-card {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid #334155;
+        }
+        .watcher-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-running { background: #065f46; color: #6ee7b7; }
+        .badge-stopped { background: #374151; color: #9ca3af; }
+        .badge-error   { background: #7f1d1d; color: #fca5a5; }
+        .badge-disabled { background: #1e293b; color: #64748b; border: 1px solid #475569; }
+        .watcher-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #334155;
+            font-size: 0.85rem;
+        }
+        .watcher-detail:last-child { border-bottom: none; }
+        .watcher-detail .key { color: #94a3b8; }
+        .error-text { color: #f87171; font-size: 0.8rem; }
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AI-FTE Watchers Dashboard</h1>
+        <div class="subtitle">Auto-refreshes every 30 seconds | {{ now }}</div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Server Uptime</div>
+            <div class="value">{{ uptime_hours }}h</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Pending Tasks</div>
+            <div class="value">{{ pending_tasks }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Active Watchers</div>
+            <div class="value">{{ watchers.values() | selectattr('state', 'equalto', 'running') | list | length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Total Tasks Created</div>
+            <div class="value">{{ watchers.values() | map(attribute='tasks_created') | sum }}</div>
+        </div>
+    </div>
+
+    <div class="watcher-grid">
+        {% for name, w in watchers.items() %}
+        <div class="watcher-card">
+            <h3>
+                {{ w.name }} Watcher
+                <span class="badge badge-{{ w.state.value }}">{{ w.state.value }}</span>
+            </h3>
+            <div class="watcher-detail">
+                <span class="key">Enabled</span>
+                <span>{{ "Yes" if w.enabled else "No" }}</span>
+            </div>
+            <div class="watcher-detail">
+                <span class="key">Poll Interval</span>
+                <span>{{ w.poll_interval_seconds }}s</span>
+            </div>
+            <div class="watcher-detail">
+                <span class="key">Last Poll</span>
+                <span>{{ w.last_poll.strftime('%H:%M:%S') if w.last_poll else "Never" }}</span>
+            </div>
+            <div class="watcher-detail">
+                <span class="key">Tasks Created</span>
+                <span>{{ w.tasks_created }}</span>
+            </div>
+            <div class="watcher-detail">
+                <span class="key">Consecutive Errors</span>
+                <span>{{ w.consecutive_errors }}</span>
+            </div>
+            {% if w.last_error %}
+            <div class="error-text" style="margin-top: 0.5rem;">
+                Last error: {{ w.last_error }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="footer">
+        <p>Vault: {{ vault_path }}</p>
+        <p>Started: {{ server_started }}</p>
+    </div>
+</body>
+</html>
