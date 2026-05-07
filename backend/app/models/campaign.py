@@ -7,8 +7,7 @@ from sqlalchemy import (
     Enum as SAEnum, Boolean,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
-from app.core.database import Base
+from app.core.database import Base, GUID
 
 
 class CampaignStatus(str, enum.Enum):
@@ -30,8 +29,8 @@ class MessageStatus(str, enum.Enum):
 class Campaign(Base):
     __tablename__ = "campaigns"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     message_template: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[CampaignStatus] = mapped_column(SAEnum(CampaignStatus), default=CampaignStatus.DRAFT)
@@ -51,9 +50,9 @@ class Campaign(Base):
 class CampaignContact(Base):
     __tablename__ = "campaign_contacts"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campaign_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("campaigns.id", ondelete="CASCADE"), index=True)
-    contact_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("contacts.id"), nullable=True)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
+    campaign_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("campaigns.id", ondelete="CASCADE"), index=True)
+    contact_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("contacts.id"), nullable=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
     personalized_message: Mapped[str] = mapped_column(Text, nullable=True)
@@ -67,8 +66,8 @@ class CampaignContact(Base):
 class CampaignMedia(Base):
     __tablename__ = "campaign_media"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campaign_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("campaigns.id", ondelete="CASCADE"))
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
+    campaign_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("campaigns.id", ondelete="CASCADE"))
     file_path: Mapped[str] = mapped_column(String(512), nullable=False)
     file_name: Mapped[str] = mapped_column(String(255), nullable=False)
     mime_type: Mapped[str] = mapped_column(String(100), nullable=False)

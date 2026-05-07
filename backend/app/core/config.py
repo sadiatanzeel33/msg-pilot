@@ -7,21 +7,25 @@ import json
 
 class Settings(BaseSettings):
     # ── Database ──
-    DATABASE_URL: str = "postgresql+asyncpg://msgpilot:msgpilot_secret@localhost:5432/msgpilot"
-    DATABASE_URL_SYNC: str = "postgresql://msgpilot:msgpilot_secret@localhost:5432/msgpilot"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./msgpilot.db"
+    DATABASE_URL_SYNC: str = "sqlite:///./msgpilot.db"
 
     @property
     def async_database_url(self) -> str:
-        """Ensure DATABASE_URL uses asyncpg driver (Railway gives postgresql://)."""
         url = self.DATABASE_URL
+        if url.startswith("sqlite"):
+            if "+aiosqlite" not in url:
+                url = url.replace("sqlite://", "sqlite+aiosqlite://", 1)
+            return url
         if url.startswith("postgresql://"):
             url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
         return url
 
     @property
     def sync_database_url(self) -> str:
-        """Ensure sync URL uses plain postgresql:// driver."""
         url = self.DATABASE_URL_SYNC or self.DATABASE_URL
+        if url.startswith("sqlite"):
+            return url.replace("+aiosqlite", "")
         if "+asyncpg" in url:
             url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
         return url

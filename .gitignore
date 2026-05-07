@@ -21,3 +21,9 @@ nul
 # Uploads & sessions
 backend/wa_sessions/
 backend/uploads/
+
+# Database
+backend/msgpilot.db
+
+# Claude Code
+.claude/

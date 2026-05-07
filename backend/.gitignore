@@ -7,3 +7,4 @@ wa_sessions/
 uploads/
 .vercel/
 *.sqlite3
+msgpilot.db
